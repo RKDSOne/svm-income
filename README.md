@@ -1,5 +1,5 @@
 # svm-income
-Code to generate a svm model to classify certain data to determine whether someone will make more or less than 50K>
+Code to generate a svm model using certain data to determine whether someone will make more or less than 50K
 
 ## How to Use
 
