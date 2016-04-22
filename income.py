@@ -8,6 +8,7 @@ import sys
 
 def preprocess(file_n):
     '''Formats file into np matrix for training'''
+    
     with open(file_n) as f:
         x_data = []
         y_data = []
@@ -31,7 +32,8 @@ def preprocess(file_n):
     return x_train, y_train, x_val, y_val
 
 def preprocess_test(file_n):
-    '''Formtas file into np matrix for testing'''
+    '''Formats file into np matrix for testing'''
+    
     with open(file_n) as f:
         x_data = []
         
@@ -48,6 +50,7 @@ def preprocess_test(file_n):
     return x_test
 
 def vectorize(array):
+    '''Turns tokens into vector representation'''
     
     #Continuous values
     vector = [
@@ -83,6 +86,7 @@ def vectorize(array):
     
 def bool_vectorize_factory(cat_file):
     '''Returns func that will vectorize a category'''
+    
     with open(cat_file) as file_c:
         categories = {}
         for line in file_c:
@@ -98,6 +102,10 @@ def bool_vectorize_factory(cat_file):
     return payload
     
 def str_adder_factory(y_pred):
+    '''Uses array of predicted labels
+       to return function that returns the appropriate
+       string label for each line of data'''
+    
     def inner(i):
         if i < len(y_pred):
             if y_pred[i]:
@@ -110,13 +118,19 @@ def str_adder_factory(y_pred):
 def main(): 
     if not isfile('model.pkl'):
         if isfile('50kadults.data.txt'):
+            #No model yet, so we will create one
             x_train, y_train, x_val, y_val = preprocess('50kadults.data.txt')
             clf = svm.SVC(kernel='linear')
             clf.fit(x_train, y_train)
             y_pred = clf.predict(x_val)
-            print "Score: " + str(metrics.accuracy_score(y_val, y_pred))    
+            print "=========================================================================="
+            print
+            print "Accuracy on Validation Set: " + str(metrics.accuracy_score(y_val, y_pred)) 
+            print 
+            print "=========================================================================="
 
             with open('model.pkl', 'wb') as pk_file:
+                #Save the model so that it can be quickly reused in the future
                 cPickle.dump(clf, pk_file)
         else:
             print "50kadulsts.data.txt not found in current directory."
@@ -124,12 +138,13 @@ def main():
 
     else:
         with open('model.pkl', 'rb') as pk_file:
+            #Load previously generated model
             clf = cPickle.load(pk_file)
                        
                   
     if len(sys.argv) == 2:
         name = sys.argv[1]
-        x_test = preprocess_test(name)
+        x_test = preprocess_test(name) #vectorize the input
         y_pred = clf.predict(x_test)
         str_adder = str_adder_factory(y_pred)
         with open(name, 'r') as f:    
